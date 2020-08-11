@@ -5,7 +5,7 @@ Version: v1.0.0
 
 Install
 -------
-
+ 
 To install with composer:
 
 ```sh

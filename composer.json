@@ -1,0 +1,22 @@
+{
+  "name": "truecastdesign/spamless",
+  "type" : "library",
+  "description": "This library provides spam filtering and protection for in coming content.",
+  "keywords": ["spam", "filtering", "filter", "detection", "checker", "tester"],
+  "license": "MIT",
+
+  "authors": [
+  {
+    "name": "Daniel Baldwin",
+    "email": "danielbaldwin@gmail.com"
+  }
+  ],
+  "require": {
+  "php": ">=7.1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Truecast\\": "src"
+    }
+  }
+}

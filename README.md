@@ -1,7 +1,7 @@
 Spamless - Spam detection class
 =======================================
 
-Version: v1.0.0
+Version: v1.1.0
 
 Install
 -------
@@ -32,7 +32,7 @@ $Spam = new Truecast\Spamless(['name'=>'My Name', 'message'=>'This is a message'
 # 'url' checks values for urls
 # 'html' check values for html
 
-if ($Spam->check(['name','message'])->with(['basic','url','html'])) {
+if ($Spam->check(['name','message'])->with(['keywords','url','html','gibberish','underscores','russian','uppercase'])) {
 	echo 'valid';
 else
 	echo 'not valid: ';

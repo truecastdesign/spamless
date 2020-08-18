@@ -6,7 +6,7 @@ namespace Truecast;
  *
  * @package True Framework 6
  * @author Daniel Baldwin
- * @version 1.0.0
+ * @version 1.1.0
  * @copyright 2020 Truecast Design Studio
  */
 class Spamless
@@ -15,9 +15,13 @@ class Spamless
 	private $tests = [];
 	private $errors = [];
 	private $errorMsgs = [
-		'basic'=>"The content you submitted appears to be SPAM.",
 		'url'=>"URLs not allowed!",
-		'html'=>"HTML not allowed!"
+		'html'=>"HTML not allowed!",
+		'russian'=>"Russian characters not allowed!",
+		'keywords'=>"The content you submitted appears to be SPAM.",
+		'gibberish'=>"The content you submitted does not appear to be actual English words.",
+		'underscores'=>"Do not combine your words with underscores!",
+		'uppercase'=>"The content you submitted appears to be SPAM. UC"
 	];
 	
 	/**
@@ -62,12 +66,31 @@ class Spamless
 		return $results;
 	}
 
-	public function basic(string $value=''): bool
+	public function gibberish($value=''): bool
 	{
-		$result[] = $this->tooManyConsonants($value);
-		$result[] = $this->keywordSearch($value);
-		$result[] = \Truecast\Gibberish::test($value);
-		return (bool) array_sum($result);
+		preg_match('/[bcdfghjklmnpqrstvwxz]{6}/i', $value, $matches);
+		return count($matches) > 0? true:false;
+		#return \Truecast\Gibberish::test($value);
+	}
+
+	public function underscores($value=''): bool
+	{
+		return (strstr($value, '_'));
+	}
+
+	/**
+	 * Check if all the alpha characters in a line are uppercase.
+	 *
+	 * @param string $str
+	 * @return bool
+	 */
+	public function uppercase($str='')
+	{
+		$lines = explode("\n",$str);	
+		foreach ($lines as $line) {
+			$result[] = (ctype_upper(preg_replace("/[^A-Za-z]/", '', $line)));
+		}
+		return (bool) array_sum($result); 
 	}
 
 	/**
@@ -77,24 +100,11 @@ class Spamless
 	 * @return bool true if urls are detected
 	 * @author Daniel Baldwin - danb@truecastdesign.com
 	 **/
-	public function url(string $value=''): bool
+	public function url($value=''): bool
 	{
 		preg_match('/www\.|http:|https:\/\/[a-z0-9_]+([\-\.]{1}[a-z_0-9]+)*\.[_‌​a-z]{2,5}'.'((:[0-9]‌​{1,5})?\/.*)?$/i', $value, $matches);
 		preg_match("/[-a-zA-Z0-9@:%_\+.~#?&\/=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&\/=]*)?/i", $value, $matches2);
 		return (count($matches) > 0 OR count($matches2) > 0)? true:false;
-	}
-
-	/**
-	 * check if the message has words will more than 6 consonants in a row. Usually means it is invalid words and spam
-	 *
-	 * @param string message text
-	 * @return bool spam if true
-	 * @author Daniel Baldwin - danb@truecastdesign.com
-	 **/
-	public function tooManyConsonants(string $value=''): bool
-	{
-		preg_match('/[bcdfghjklmnpqrstvwxz]{6}/i', $value, $matches);
-		return count($matches) > 0? true:false;
 	}
 
 	/**
@@ -104,16 +114,20 @@ class Spamless
 	 * @return bool - true if we think it is spam
 	 * @author Daniel Baldwin - danb@truecastdesign.com
 	 **/
-	public function keywordSearch(string $value=''): bool
+	public function keywords($value=''): bool
 	{
-		$keywords = require 'keywords.php';	
-		$hit = false;
+		$keywords = require 'keywords.php';		
+		return in_array(strtolower($value), $keywords);
+	}
 
-		foreach ($keywords as $key) {
-			if (stripos($value, $key) !== false)
-				$hit = true;
-		}
-		return $hit;
+	/**
+	 * Check for Russian characters
+	 *
+	 * @param string $text
+	 * @return boolean - true if is contains russian characters
+	 */
+	public function russian($text='') {
+		return preg_match('/[А-Яа-яЁё]/u', $text);
 	}
 
 	/**
@@ -122,7 +136,7 @@ class Spamless
 	 * @param string $value
 	 * @return bool
 	 */
-	public function html(string $value=''): bool
+	public function html($value=''): bool
 	{
 		return (strip_tags($value) != $value)? true:false;
 	}

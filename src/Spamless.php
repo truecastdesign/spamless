@@ -107,6 +107,19 @@ class Spamless
 		return (count($matches) > 0 OR count($matches2) > 0)? true:false;
 	}
 
+	/** NOT USED
+	 * check if the message has words will more than 6 consonants in a row. Usually means it is invalid words and spam
+	 *
+	 * @param string message text
+	 * @return bool spam if true
+	 * @author Daniel Baldwin - danb@truecastdesign.com
+	 **/
+	public function tooManyConsonants($value=''): bool
+	{
+		preg_match('/[bcdfghjklmnpqrstvwxz]{6}/i', $value, $matches);
+		return count($matches) > 0? true:false;
+	}
+
 	/**
 	 * search message for spam keywords
 	 *
@@ -117,7 +130,13 @@ class Spamless
 	public function keywords($value=''): bool
 	{
 		$keywords = require 'keywords.php';		
-		return in_array(strtolower($value), $keywords);
+		$hit = false;
+
+		foreach ($keywords as $key) {
+			if (stripos($value, $key) !== false)
+				$hit = true;
+		}
+		return $hit;
 	}
 
 	/**

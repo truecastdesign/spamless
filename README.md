@@ -1,7 +1,7 @@
 Spamless - Spam detection class
 =======================================
 
-Version: v1.1.1
+Version: v1.1.2
 
 Install
 -------

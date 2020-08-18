@@ -6,7 +6,7 @@ namespace Truecast;
  *
  * @package True Framework 6
  * @author Daniel Baldwin
- * @version 1.1.0
+ * @version 1.1.1
  * @copyright 2020 Truecast Design Studio
  */
 class Spamless

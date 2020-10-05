@@ -32,7 +32,7 @@ $Spam = new Truecast\Spamless(['name'=>'My Name', 'message'=>'This is a message'
 # 'url' checks values for urls
 # 'html' check values for html
 
-if ($Spam->check(['name','message'])->with(['keywords','url','html','gibberish','underscores','russian','uppercase'])) {
+if ($Spam->tests(['gibberish','uppercase','underscores','keywords','russian','url','html'])->check(['name','phone', 'message'])) {
 	echo 'valid';
 else
 	echo 'not valid: ';

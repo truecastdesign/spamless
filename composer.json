@@ -4,6 +4,7 @@
   "description": "This library provides spam filtering and protection for in coming content.",
   "keywords": ["spam", "filtering", "filter", "detection", "checker", "tester"],
   "license": "MIT",
+  "version": "v1.1.3",
 
   "authors": [
   {

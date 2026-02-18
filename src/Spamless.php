@@ -6,8 +6,8 @@ namespace Truecast;
  *
  * @package True Framework 6
  * @author Daniel Baldwin
- * @version 1.1.1
- * @copyright 2020 Truecast Design Studio
+ * @version 1.1.2
+ * @copyright 2026 Truecast Design Studio
  */
 class Spamless
 {
@@ -21,7 +21,8 @@ class Spamless
 		'keywords'=>"The content you submitted appears to be SPAM.",
 		'gibberish'=>"The content you submitted does not appear to be actual English words.",
 		'underscores'=>"Do not combine your words with underscores!",
-		'uppercase'=>"The content you submitted appears to be SPAM. UC"
+		'uppercase'=>"The content you submitted appears to be SPAM. UC",
+		'salesEmail'=>"This appears to be a sales or spam email."
 	];
 	
 	/**
@@ -68,6 +69,8 @@ class Spamless
 
 	public function gibberish($value=''): bool
 	{
+		if (empty($value))
+			return false;
 		preg_match('/[bcdfghjklmnpqrstvwxz]{6}/i', $value, $matches);
 		return count($matches) > 0? true:false;
 		#return \Truecast\Gibberish::test($value);
@@ -75,7 +78,9 @@ class Spamless
 
 	public function underscores($value=''): bool
 	{
-		return (strstr($value, '_'));
+		if (empty($value))
+			return false;
+		return (strstr($value, '_') !== false);
 	}
 
 	/**
@@ -86,11 +91,13 @@ class Spamless
 	 */
 	public function uppercase($str='')
 	{
-		$lines = explode("\n",$str);	
+		if (empty($str))
+			return false;
+		$lines = explode("\n",$str);
 		foreach ($lines as $line) {
 			$result[] = (ctype_upper(preg_replace("/[^A-Za-z]/", '', $line)));
 		}
-		return (bool) array_sum($result); 
+		return (bool) array_sum($result);
 	}
 
 	/**
@@ -102,6 +109,8 @@ class Spamless
 	 **/
 	public function url($value=''): bool
 	{
+		if (empty($value))
+			return false;
 		preg_match('/www\.|http:|https:\/\/[a-z0-9_]+([\-\.]{1}[a-z_0-9]+)*\.[_‌​a-z]{2,5}'.'((:[0-9]‌​{1,5})?\/.*)?$/i', $value, $matches);
 		preg_match("/[-a-zA-Z0-9@:%_\+.~#?&\/=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&\/=]*)?/i", $value, $matches2);
 		return (count($matches) > 0 OR count($matches2) > 0)? true:false;
@@ -116,6 +125,8 @@ class Spamless
 	 **/
 	public function tooManyConsonants($value=''): bool
 	{
+		if (empty($value))
+			return false;
 		preg_match('/[bcdfghjklmnpqrstvwxz]{6}/i', $value, $matches);
 		return count($matches) > 0? true:false;
 	}
@@ -129,7 +140,10 @@ class Spamless
 	 **/
 	public function keywords($value=''): bool
 	{
-		$keywords = require 'keywords.php';		
+		if (empty($value))
+			return false;
+
+		$keywords = require 'keywords.php';
 		$hit = false;
 
 		foreach ($keywords as $key) {
@@ -146,6 +160,8 @@ class Spamless
 	 * @return boolean - true if is contains russian characters
 	 */
 	public function russian($text='') {
+		if (empty($text))
+			return false;
 		return preg_match('/[А-Яа-яЁё]/u', $text);
 	}
 
@@ -157,7 +173,84 @@ class Spamless
 	 */
 	public function html($value=''): bool
 	{
+		if (empty($value))
+			return false;
 		return (strip_tags($value) != $value)? true:false;
+	}
+
+	/**
+	 * Detect SEO/sales spam emails with common cold outreach patterns
+	 *
+	 * @param string $value - message text to check
+	 * @return bool - true if appears to be a sales/spam email
+	 */
+	public function salesEmail($value=''): bool
+	{
+		if (empty($value))
+			return false;
+
+		// Convert to lowercase for case-insensitive matching
+		$lowerValue = strtolower($value);
+
+		// Common SEO spam phrases
+		$seoSpamPhrases = [
+			'google\'s 1st page',
+			'google search index',
+			'search engine optimization',
+			'improve your website\'s position',
+			'appear in google search',
+			'organic search ranking',
+			'seo setup',
+			'searchregister.',
+			'register your website',
+			'submit your website',
+			'insert your website',
+			'improve your ranking',
+			'increase your traffic',
+			'generate more sales',
+			'online traffic',
+			'expert team of professionals',
+			'backend of your website',
+			'google when people search',
+			'squarespace, shopify, wix, wordpress'
+		];
+
+		// Video/service spam phrases
+		$servicePhrases = [
+			'impactful video to advertise',
+			'our videos cost just',
+			'voice-over and video',
+			'30 second video',
+			'60 seconds',
+			'previous work',
+			'send you a proposal'
+		];
+
+		// Generic cold outreach patterns
+		$coldOutreachPhrases = [
+			'i just visited',
+			'i came across your website',
+			'kindly provide me your',
+			'phone number and email',
+			'your phone number',
+			'if interested, kindly',
+			'if you are interested',
+			'let me know if you\'re interested'
+		];
+
+		// Combine all spam phrases
+		$allPhrases = array_merge($seoSpamPhrases, $servicePhrases, $coldOutreachPhrases);
+
+		// Count how many spam phrases are detected
+		$matchCount = 0;
+		foreach ($allPhrases as $phrase) {
+			if (stripos($lowerValue, $phrase) !== false) {
+				$matchCount++;
+			}
+		}
+
+		// If 2 or more spam phrases detected, flag as sales email
+		return $matchCount >= 2;
 	}
 
 	/**
